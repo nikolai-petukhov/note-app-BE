@@ -1,54 +1,56 @@
+require('dotenv').config();
 const express = require("express");
 const app = express();
 const cors = require('cors');
+const mongoose = require('mongoose');
 
 const { requestLogger, unknownEndpoint} = require('./middleware/requestLogger');
+
+const Note = require('./models/note');
 
 app.use(express.json());
 app.use(requestLogger);
 app.use(cors());
 app.use(express.static('build'));
 
-let notes = [
-  {
-    id: 1,
-    content: "HTML is easy",
-    date: "2022-05-30T17:30:31.098Z",
-    important: true,
-  },
-  {
-    id: 2,
-    content: "Browser can execute only Javascript",
-    date: "2022-05-30T18:39:34.091Z",
-    important: false,
-  },
-  {
-    id: 3,
-    content: "GET and POST are the most important methods of HTTP protocol",
-    date: "2022-05-30T19:20:14.298Z",
-    important: true,
-  },
-];
+// const url = `mongodb+srv://nikolaipetukhov:111nikolaipetukhov111@cluster0.lbxz0cr.mongodb.net/noteApp?retryWrites=true&w=majority`;
+// mongoose.connect(url);
 
-const generateId = () => {
-  const maxId = notes.length > 0 ? Math.max(...notes.map((n) => n.id)) : 0;
+// const noteSchema = new mongoose.Schema({
+//   content: String,
+//   date: Date,
+//   important: Boolean
+// });
 
-  return maxId + 1;
-};
+// noteSchema.set('toJSON', {
+//   transform: (document, returnedObject) => {
+//     returnedObject.id = returnedObject._id.toString();
+//     delete returnedObject._id;
+//     delete returnedObject.__v;
+//   }
+// });
+
+// const Note = mongoose.model('Note', noteSchema);
+
 
 app.get("/", (request, response) => {
   response.send("<h1>Hello World</h1>");
 });
 
 app.get("/api/notes", (request, response) => {
-  response.json(notes);
+  Note.find({}).then(notes => {
+    response.json(notes);
+  });
 });
 
 app.get("/api/notes/:id", (request, response) => {
-  const id = +request.params.id; // Number(request.params.id)
-  const note = notes.find((note) => note.id === id);
+  // const id = +request.params.id; // Number(request.params.id)
+  // const note = notes.find((note) => note.id === id);
 
-  note ? response.json(note) : response.status(404).end();
+  // note ? response.json(note) : response.status(404).end();
+  Note.findById(request.params.id).then(note => {
+    response.json(note);
+  })
 });
 
 app.post("/api/notes", (request, response) => {
@@ -57,16 +59,19 @@ app.post("/api/notes", (request, response) => {
   !body.content
     && response.status(400).json({error: 'content missing'});
 
-    const note = {
+    const note = new Note({
         content: body.content,
         important: body.important || false,
         date: new Date(),
-        id: generateId()
-    };
+    });
 
-    notes.concat(note);
+    note.save().then(saveNote => {
+      response.json(saveNote);
+    });
+
+    // notes.concat(note);
     
-    response.json(note);
+    // response.json(note);
 });
 
 app.delete("/api/notes/:id", (request, response) => {

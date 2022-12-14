@@ -2,6 +2,6 @@ POST http://localhost:3001/api/notes
 Content-Type: application/json
 
 {
-    "content": "ololo",
+    "content": "new note from mongoDB on heroku",
     "important": true
 }
