@@ -3,7 +3,6 @@ const express = require("express");
 const app = express();
 const cors = require('cors');
 const mongoose = require('mongoose');
-const timeout = require('connect-timeout');
 
 const { requestLogger, unknownEndpoint} = require('./middleware/requestLogger');
 
@@ -19,7 +18,6 @@ app.get("/", (request, response) => {
 });
 
 app.get("/api/notes", (request, response) => {
-  if (req.timedout) return;
   Note.find({}).then(notes => {
     response.json(notes);
   });
@@ -56,12 +54,6 @@ app.delete("/api/notes/:id", (request, response) => {
 });
 
 app.use(unknownEndpoint);
-
-function haltOnTimedout (req, res, next) {
-  if (!req.timedout) next()
-}
-
-
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT);
