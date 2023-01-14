@@ -1,0 +1,7 @@
+PUT http://localhost:3001/api/notes/637d10b82b260ba79e758470
+Content-Type: application/json
+
+{
+    "content": "note#3 updated ",
+    "important": false
+}
